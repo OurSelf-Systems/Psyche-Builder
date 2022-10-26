@@ -1,0 +1,6 @@
+nginx
+tailscale
+nats-server
+mbuffer
+linux_base-c7
+linux-c7-xorg-libs

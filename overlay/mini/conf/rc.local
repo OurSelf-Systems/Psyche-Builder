@@ -1,0 +1,2 @@
+#!/bin/sh
+ldconfig /usr/local/lib
