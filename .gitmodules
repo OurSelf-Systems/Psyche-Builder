@@ -1,3 +1,6 @@
 [submodule "self"]
 	path = self
 	url = git@github.com:russellallen/self.git
+[submodule "mfsbsd"]
+	path = mfsbsd
+	url = git@github.com:OurSelf-Systems/mfsbsd.git

@@ -1,5 +1,4 @@
 authorized_keys
 customfiles/root/.ssh/
 *.iso
-mfsbsd/
 src/
