@@ -21,3 +21,4 @@ lib/libmhash.so.*
 sbin/dmidecode
 sbin/smartctl
 sbin/nginx
+sbin/pkg-static
