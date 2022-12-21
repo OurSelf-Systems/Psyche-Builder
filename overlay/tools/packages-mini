@@ -1,6 +1,6 @@
-nginx
-tailscale
-nats-server
+wireguard-kmod
+wireguard-tools-lite
+bash-static
 mbuffer
 linux_base-c7
 linux-c7-xorg-libs

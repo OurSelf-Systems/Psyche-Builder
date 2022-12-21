@@ -67,8 +67,10 @@ usr/bin/last
 usr/bin/ldd
 usr/bin/login
 usr/bin/make
+usr/bin/mktemp
 usr/bin/openssl
 usr/bin/passwd
+usr/bin/readlink
 usr/bin/sort
 usr/bin/top
 usr/bin/touch
@@ -168,3 +170,4 @@ compat/linux/usr/lib/libXext*
 compat/linux/usr/lib/libX11*
 compat/linux/usr/lib/libXau*
 compat/linux/usr/lib/libxcb*
+boot/modules/if_wg.ko
