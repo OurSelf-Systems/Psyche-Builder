@@ -7,7 +7,7 @@ clean: clean_mfsbsd
 	rmdir cdrom || true
 	rm -f psyche-13.1-RELEASE-amd64.iso
 	rm -f boot_snap/boot.snap
-	rm -f overlay_2/usr/local/self/boot.snap
+	rm -f customfiles/usr/local/self/boot.snap
 
 clean_full: clean
 	rm -f FreeBSD-13.1-RELEASE-amd64-disc1.iso
@@ -31,28 +31,23 @@ cdrom: FreeBSD-13.1-RELEASE-amd64-disc1.iso
 #	Main build
 #
 
-psyche-13.1-RELEASE-amd64.iso: cdrom overlay_2/usr/local/self/boot.snap
-	# First overlay
+psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/usr/local/self/boot.snap 
+	# Overlay
 	rsync -av overlay/ mfsbsd/
 	# Prepare
 	cd mfsbsd ; make clean
-	# Prepare for mini
-	cd mfsbsd ; make prepare-mini BASE=../cdrom/usr/freebsd-dist \
+	# Prepare
+	cp mfsbsdMakefile mfsbsd/Makefile
+	cd mfsbsd ; make iso BASE=../cdrom/usr/freebsd-dist \
+		CUSTOMSCRIPTSDIR=../customscripts \
+		CUSTOMFILESDIR=../customfilesdir \
+		IMAGE_PREFIX=psyche \
         MFSROOT_MINSIZE=200m \
-        MFSROOT_MAXSIZE=2000m \
-        MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi linux linux_common linux64 ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
-        BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi linux linux_common linux64 ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
-	# Second overlay
-	rsync -av overlay_2/ mfsbsd/work/mfs/rw/
-	# Build ISO
-	cd mfsbsd/mini ; make iso BASE=../../cdrom/usr/freebsd-dist  \
-        IMAGE_PREFIX=psyche \
-        MFSROOT_MINSIZE=500m \
-        MFSROOT_MAXSIZE=2000m \
+        MFSROOT_MAXSIZE=3000m \
         MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi linux linux_common linux64 ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
         BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi linux linux_common linux64 ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
 	# Move back to top
-	mv mfsbsd/mini/psyche*.iso .
+	mv mfsbsd/psyche*.iso .
 
 #
 #	boot.snap
@@ -62,8 +57,8 @@ SELF=/usr/local/bin/Self
 # Relative to boot_snap
 BASE=../self/objects
 
-overlay_2/usr/local/self/boot.snap: boot_snap/boot.snap
-	cp boot_snap/boot.snap overlay_2/usr/local/self/boot.snap
+customfiles/usr/local/self/boot.snap: boot_snap/boot.snap
+	cp boot_snap/boot.snap customfiles/usr/local/self/boot.snap
 	
 boot_snap/boot.snap:
 	cd boot_snap ; echo "saveAs: 'boot.snap'. quitNoSave" | $(SELF) -f $(BASE)/worldBuilder.self -b $(BASE) -f2 setup.self -o morphic

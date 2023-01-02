@@ -4,9 +4,16 @@ indexinfo
 ipmitool
 libevent
 libiconv
-nano
+micro
 readline
 rsync
 smartmontools
 tmux
 utf8proc
+tigervnc-server
+wireguard-kmod
+wireguard-tools-lite
+bash
+mbuffer
+linux_base-c7
+linux-c7-xorg-libs
