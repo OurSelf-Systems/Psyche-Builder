@@ -6,7 +6,6 @@ clean: clean_mfsbsd
 	mdconfig -du md10 || true
 	rmdir cdrom || true
 	rm -f psyche-13.1-RELEASE-amd64.iso
-	rm -f boot_snap/boot.snap
 	rm -f customfiles/usr/local/self/boot.snap
 
 clean_full: clean
@@ -37,10 +36,9 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/usr/local/self/boot.snap
 	# Prepare
 	cd mfsbsd ; make clean
 	# Prepare
-	cp mfsbsdMakefile mfsbsd/Makefile
 	cd mfsbsd ; make iso BASE=../cdrom/usr/freebsd-dist \
 		CUSTOMSCRIPTSDIR=../customscripts \
-		CUSTOMFILESDIR=../customfilesdir \
+		CUSTOMFILESDIR=../customfiles \
 		IMAGE_PREFIX=psyche \
         MFSROOT_MINSIZE=200m \
         MFSROOT_MAXSIZE=3000m \
@@ -55,13 +53,10 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/usr/local/self/boot.snap
 
 SELF=/usr/local/bin/Self
 # Relative to boot_snap
-BASE=../self/objects
+BASE=./self/objects
 
-customfiles/usr/local/self/boot.snap: boot_snap/boot.snap
-	cp boot_snap/boot.snap customfiles/usr/local/self/boot.snap
-	
-boot_snap/boot.snap:
-	cd boot_snap ; echo "saveAs: 'boot.snap'. quitNoSave" | $(SELF) -f $(BASE)/worldBuilder.self -b $(BASE) -f2 setup.self -o morphic
+customfiles/usr/local/self/boot.snap:
+	cd customfiles/usr/local/self && echo "saveAs: 'boot.snap'. quitNoSave" | $(SELF) -f $(BASE)/worldBuilder.self -b $(BASE) -f2 setup.self -o morphic
 
-clean_boot.snap:
-	rm -f boot_snap/boot.snap
+clean_customfiles/usr/local/self/boot.snap:
+	rm -f customfiles/usr/local/self/boot.snap
