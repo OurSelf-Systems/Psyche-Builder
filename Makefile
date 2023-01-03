@@ -1,18 +1,17 @@
 all: psyche-13.1-RELEASE-amd64.iso
 
-clean: clean_mfsbsd
+clean: clean_mfsbsd clean_customfiles/Persona/snapshot
     # Ignore, probably just not mounted
 	umount cdrom || true
 	mdconfig -du md10 || true
 	rmdir cdrom || true
 	rm -f psyche-13.1-RELEASE-amd64.iso
-	rm -rf customfiles/Persona
 
 clean_full: clean
 	rm -f FreeBSD-13.1-RELEASE-amd64-disc1.iso
 
 clean_mfsbsd:
-	cd mfsbsd ; git reset --hard ; git clean -fxd . 
+	cd mfsbsd ; make clean ; git reset --hard ; git clean -fxd . 
 
 #
 #	Prepare
@@ -52,10 +51,8 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/Persona/snapshot
 # 
 
 customfiles/Persona/snapshot:
-    cd customfiles && \
-    git clone --recursive git@github.com:OurSelf-Systems/Persona.git && \
-    cd Persona && \
-    make
+	cd customfiles && git clone --depth 1 --recursive --shallow-submodules git@github.com:OurSelf-Systems/Persona.git 
+	cd customfiles/Persona && make
 
 clean_customfiles/Persona/snapshot:
 	rm -rf customfiles/Persona
