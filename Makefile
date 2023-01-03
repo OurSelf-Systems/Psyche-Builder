@@ -6,7 +6,7 @@ clean: clean_mfsbsd
 	mdconfig -du md10 || true
 	rmdir cdrom || true
 	rm -f psyche-13.1-RELEASE-amd64.iso
-	rm -f customfiles/usr/local/self/boot.snap
+	rm -rf customfiles/Persona
 
 clean_full: clean
 	rm -f FreeBSD-13.1-RELEASE-amd64-disc1.iso
@@ -30,7 +30,7 @@ cdrom: FreeBSD-13.1-RELEASE-amd64-disc1.iso
 #	Main build
 #
 
-psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/usr/local/self/boot.snap 
+psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/Persona/snapshot
 	# Overlay
 	rsync -av overlay/ mfsbsd/
 	# Prepare
@@ -48,15 +48,14 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/usr/local/self/boot.snap
 	mv mfsbsd/psyche*.iso .
 
 #
-#	boot.snap
+#	snapshot
 # 
 
-SELF=/usr/local/bin/Self
-# Relative to boot_snap
-BASE=./self/objects
+customfiles/Persona/snapshot:
+    cd customfiles && \
+    git clone --recursive git@github.com:OurSelf-Systems/Persona.git && \
+    cd Persona && \
+    make
 
-customfiles/usr/local/self/boot.snap:
-	cd customfiles/usr/local/self && echo "saveAs: 'boot.snap'. quitNoSave" | $(SELF) -f $(BASE)/worldBuilder.self -b $(BASE) -f2 setup.self -o morphic
-
-clean_customfiles/usr/local/self/boot.snap:
-	rm -f customfiles/usr/local/self/boot.snap
+clean_customfiles/Persona/snapshot:
+	rm -rf customfiles/Persona

@@ -1,6 +1,3 @@
 [submodule "mfsbsd"]
 	path = mfsbsd
 	url = git@github.com:OurSelf-Systems/mfsbsd.git
-[submodule "Persona"]
-	path = Persona
-	url = git@github.com:OurSelf-Systems/Persona.git
