@@ -29,7 +29,7 @@ cdrom: FreeBSD-13.1-RELEASE-amd64-disc1.iso
 #	Main build
 #
 
-psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/Persona/snapshot
+psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/self/snapshot
 	# Overlay
 	rsync -av overlay/ mfsbsd/
 	# Prepare
@@ -50,10 +50,10 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/Persona/snapshot
 #	snapshot
 # 
 
-customfiles/Persona/snapshot:
-	cd customfiles && git clone --depth 1 --recursive --shallow-submodules git@github.com:OurSelf-Systems/Persona.git 
-	cd customfiles/Persona/self && git sparse-checkout init --cone && git sparse-checkout add objects
-	cd customfiles/Persona && make
+customfiles/self/snapshot:
+	cd customfiles && git clone --depth 1 --recursive --shallow-submodules git@github.com:OurSelf-Systems/Psyche.git 
+	cd customfiles/self/self && git sparse-checkout init --cone && git sparse-checkout add objects
+	cd customfiles/self && make
 
-clean_customfiles/Persona/snapshot:
-	rm -rf customfiles/Persona
+clean_customfiles/self/snapshot:
+	rm -rf customfiles/self
