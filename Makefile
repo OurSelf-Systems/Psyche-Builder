@@ -1,6 +1,6 @@
 all: psyche-13.1-RELEASE-amd64.iso
 
-clean: clean_mfsbsd clean_customfiles/Persona/snapshot
+clean: clean_mfsbsd clean_customfiles/self/snapshot
     # Ignore, probably just not mounted
 	umount cdrom || true
 	mdconfig -du md10 || true
@@ -51,7 +51,7 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/self/snapshot
 # 
 
 customfiles/self/snapshot:
-	cd customfiles && git clone --depth 1 --recursive --shallow-submodules git@github.com:OurSelf-Systems/Psyche.git 
+	cd customfiles && git clone --depth 1 --recursive --shallow-submodules git@github.com:OurSelf-Systems/Psyche.git self
 	cd customfiles/self/self && git sparse-checkout init --cone && git sparse-checkout add objects
 	cd customfiles/self && make
 
