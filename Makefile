@@ -52,6 +52,7 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/Persona/snapshot
 
 customfiles/Persona/snapshot:
 	cd customfiles && git clone --depth 1 --recursive --shallow-submodules git@github.com:OurSelf-Systems/Persona.git 
+	cd customfiles/Persona/self && git sparse-checkout init --cone && git sparse-checkout add objects
 	cd customfiles/Persona && make
 
 clean_customfiles/Persona/snapshot:
