@@ -2,7 +2,7 @@ DATEPREFIX != date "+%y%m%d.%H%M"
 
 all: psyche-13.1-RELEASE-amd64.iso
 
-clean: clean_mfsbsd clean_customfiles/self/snapshot
+clean: clean_mfsbsd clean_customfiles/objects/snapshot
     # Ignore, probably just not mounted
 	umount cdrom || true
 	mdconfig -du md10 || true
@@ -31,7 +31,7 @@ cdrom: FreeBSD-13.1-RELEASE-amd64-disc1.iso
 #	Main build
 #
 
-psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/self/snapshot
+psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot
 	# Overlay
 	rsync -av overlay/ mfsbsd/
 	# Prepare
