@@ -1,3 +1,5 @@
+DATEPREFIX != date "+%y%m%d.%H%M"
+
 all: psyche-13.1-RELEASE-amd64.iso
 
 clean: clean_mfsbsd clean_customfiles/self/snapshot
@@ -41,8 +43,8 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/self/snapshot
 		IMAGE_PREFIX=psyche \
         MFSROOT_MINSIZE=200m \
         MFSROOT_MAXSIZE=3000m \
-        MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi linux linux_common linux64 ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
-        BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi linux linux_common linux64 ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
+        MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
+        BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
 	# Move back to top
 	mv mfsbsd/psyche*.iso .
 
@@ -50,10 +52,10 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/self/snapshot
 #	snapshot
 # 
 
-customfiles/self/snapshot:
-	cd customfiles && git clone --depth 1 --recursive --shallow-submodules git@github.com:OurSelf-Systems/Psyche.git self
-	cd customfiles/self/self && git sparse-checkout init --cone && git sparse-checkout add objects
-	cd customfiles/self && make
+customfiles/objects/snapshot:
+	cd customfiles && git clone --depth 1 --recursive --shallow-submodules git@github.com:OurSelf-Systems/Psyche.git objects
+	cd customfiles/objects/self && git sparse-checkout init --cone && git sparse-checkout add objects
+	cd customfiles/objects && make
 
-clean_customfiles/self/snapshot:
-	rm -rf customfiles/self
+clean_customfiles/objects/snapshot:
+	rm -rf customfiles/objects

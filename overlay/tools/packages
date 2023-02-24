@@ -4,7 +4,6 @@ indexinfo
 ipmitool
 libevent
 libiconv
-micro
 readline
 smartmontools
 utf8proc
@@ -14,7 +13,5 @@ ratpoison
 wireguard-kmod
 wireguard-tools
 mbuffer
-linux_base-c7
-linux-c7-xorg-libs
-git
+git-tiny
 socat
