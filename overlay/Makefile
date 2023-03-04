@@ -353,6 +353,15 @@ ${WRKDIR}/.packages_done:
 		PKG_CACHEDIR=${WRKDIR}/pkgcache \
 		${PKG} -r ${_DESTDIR} install `${CAT} $${_PKGS}`; \
 		fi;
+	${_v}if [ -f "${TOOLSDIR}/remove_packages" ]; then \
+		_PKGS="${TOOLSDIR}/remove_packages"; \
+		fi; \
+		if [ -n "$${_PKGS}" ]; then \
+		env ASSUME_ALWAYS_YES=yes \
+		PKG_ABI="${PKG_ABI}" \
+		PKG_CACHEDIR=${WRKDIR}/pkgcache \
+		${PKG} -r ${_DESTDIR} remove -f `${CAT} $${_PKGS}`; \
+		fi;
 	${_v}${TOUCH} ${WRKDIR}/.packages_done
 
 packages-mini: packages ${WRKDIR}/.packages_mini_done
