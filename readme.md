@@ -6,13 +6,9 @@ This repository allows building a .iso file which is an immutable OS booting int
 
 The OS provides:
 
-* Cut down FreeBSD 13.1
-* ZFS
-* Enough libraries to boot a linux Self VM with X support
-* Nginx
-* Tailscale client
-* NATS client
+* Base x64 FreeBSD 13.1, including ZFS and Jails
+* Enough libraries to boot a i386 Self VM with X support
 
-You will need to be on FreeBSD 13.1, with Linux compatability enabled so a Self Linux VM binary will run.
+You will need to be on FreeBSD 13.1, with i386 compatability enabled so a Self Linux VM binary will run.
 
 Dumped under the APGL while in this exploratory phase, will reconsider later.
