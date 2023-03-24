@@ -1,6 +1,11 @@
 DATEPREFIX != date "+%y%m%d.%H%M"
 
-all: psyche-13.1-RELEASE-amd64.iso
+
+all: mfsbsd-13.1-RELEASE-amd64.iso
+
+iso != head -n 1 ./customfiles/objects/transporter/psyche/psyche.self | tr -d "\'" | tr -d " "
+iso_rename:
+	cp mfsbsd*.iso "psyche-${iso}.iso"
 
 clean: clean_mfsbsd clean_customfiles/objects/snapshot
     # Ignore, probably just not mounted
@@ -31,7 +36,7 @@ cdrom: FreeBSD-13.1-RELEASE-amd64-disc1.iso
 #	Main build
 #
 
-psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot
+mfsbsd-13.1-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot
 	# Overlay
 	rsync -av overlay/ mfsbsd/
 	# Prepare
@@ -40,14 +45,12 @@ psyche-13.1-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot
 	cd mfsbsd ; make iso BASE=../cdrom/usr/freebsd-dist \
 		CUSTOMSCRIPTSDIR=../customscripts \
 		CUSTOMFILESDIR=../customfiles \
-		IMAGE_PREFIX=psyche \
         MFSROOT_MINSIZE=200m \
         MFSROOT_MAXSIZE=3000m \
         MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
         BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
 	# Move back to top
-	mv mfsbsd/psyche*.iso .
-
+	mv mfsbsd/mfsbsd*.iso .
 #
 #	snapshot
 # 
@@ -59,3 +62,4 @@ customfiles/objects/snapshot:
 
 clean_customfiles/objects/snapshot:
 	rm -rf customfiles/objects
+
