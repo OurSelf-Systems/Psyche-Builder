@@ -2,3 +2,4 @@
 set +
 TOP=$WRKDIR/mfs/rw/
 rm -r $TOP/usr/local/include
+
