@@ -16,3 +16,12 @@ endif
 cd /objects
 setenv DISPLAY :1
 /vm/Self -s snapshot --resetXDisplays
+
+# For development images
+if (-e /RESTART_REQUESTED) then
+  set SNAP = `cat /RESTART_REQUESTED`
+  /vm/Self -s "$SNAP/snapshot" --resetXDisplays
+endif
+
+
+
