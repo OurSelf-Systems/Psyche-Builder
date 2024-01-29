@@ -15,3 +15,4 @@ wireguard-tools
 mbuffer
 git-tiny
 socat
+dtach
