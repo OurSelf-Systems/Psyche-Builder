@@ -10,9 +10,14 @@ utf8proc
 tigervnc-server
 urwfonts
 ratpoison
-wireguard-kmod
-wireguard-tools
 mbuffer
 git-tiny
 socat
 dtach
+ttyd
+python3
+websockify
+caddy
+bash
+tmux
+sl
