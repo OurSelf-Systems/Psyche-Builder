@@ -6,9 +6,12 @@ This repository allows building a .iso file which is an immutable OS booting int
 
 The OS provides:
 
-* Base x64 FreeBSD 13.1, including ZFS and Jails
+* Base x64 FreeBSD, including ZFS and Jails
 * Enough libraries to boot a i386 Self VM with X support
 
-You will need to be on FreeBSD 13.1, with i386 compatability enabled so a Self Linux VM binary will run.
+You will need to be on FreeBSD 14.1, with i386 compatability enabled so a Self Linux VM binary will run.
 
 Dumped under the APGL while in this exploratory phase, will reconsider later.
+
+Remember to do `git submodule update --init --recursive` after cloning.
+
