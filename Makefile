@@ -7,7 +7,7 @@ iso != head -n 1 ./customfiles/objects/transporter/psyche/psyche.self | tr -d "\
 iso_rename:
 	cp mfsbsd*.iso "psyche-${iso}.iso"
 
-clean: clean_mfsbsd clean_customfiles/objects/snapshot clean_customfiles/opt/noVNC
+clean: clean_mfsbsd clean_customfiles/objects/snapshot clean_customfiles/opt/noVNC clean_customfiles/vm
     # Ignore, probably just not mounted
 	umount cdrom || true
 	mdconfig -du md10 || true
@@ -37,7 +37,7 @@ cdrom: FreeBSD-13.1-RELEASE-amd64-disc1.iso
 #	Main build
 #
 
-mfsbsd-13.1-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot customfiles/opt/noVNC
+mfsbsd-13.1-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot customfiles/opt/noVNC customfiles/vm
 	# Overlay
 	rsync -av overlay/ mfsbsd/
 	# Prepare
@@ -52,6 +52,19 @@ mfsbsd-13.1-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot customfiles/op
         BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
 	# Move back to top
 	mv mfsbsd/mfsbsd*.iso .
+
+#
+#   Self VM
+#
+customfiles/vm: components/vm/vm/Self
+	mkdir -p customfiles/vm && cp components/vm/vm/* customfiles/vm/
+
+components/vm/vm/Self:
+	cd components/vm ; ./build.sh
+
+clean_customfiles/vm:
+	rm -rf customfiles/vm
+
 #
 #	snapshot
 # 
