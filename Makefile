@@ -1,7 +1,7 @@
 DATEPREFIX != date "+%y%m%d.%H%M"
 
 
-all: mfsbsd-13.1-RELEASE-amd64.iso
+all: mfsbsd-13.3-RELEASE-amd64.iso
 
 iso != head -n 1 ./customfiles/objects/transporter/psyche/psyche.self | tr -d "\'" | tr -d " "
 iso_rename:
@@ -16,7 +16,7 @@ clean: clean_mfsbsd clean_customfiles/objects/snapshot clean_customfiles/opt/noV
 	rm -f psyche-13.1-RELEASE-amd64.iso
 
 clean_full: clean
-	rm -f FreeBSD-13.1-RELEASE-amd64-disc1.iso
+	rm -f FreeBSD-13.3-RELEASE-amd64-disc1.iso
 
 clean_mfsbsd:
 	cd mfsbsd ; make clean ; git reset --hard ; git clean -fxd . 
@@ -25,19 +25,19 @@ clean_mfsbsd:
 #	Prepare
 #
 
-FreeBSD-13.1-RELEASE-amd64-disc1.iso:
-	fetch http://ftp.au.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/13.1/FreeBSD-13.1-RELEASE-amd64-disc1.iso
+FreeBSD-13.3-RELEASE-amd64-disc1.iso:
+	fetch http://ftp.au.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/13.3/FreeBSD-13.3-RELEASE-amd64-disc1.iso
 
-cdrom: FreeBSD-13.1-RELEASE-amd64-disc1.iso
+cdrom: FreeBSD-13.3-RELEASE-amd64-disc1.iso
 	mkdir cdrom
-	mdconfig -a -t vnode -u 10 -f FreeBSD-13.1-RELEASE-amd64-disc1.iso
+	mdconfig -a -t vnode -u 10 -f FreeBSD-13.3-RELEASE-amd64-disc1.iso
 	mount_cd9660 /dev/md10 cdrom
 
 #
 #	Main build
 #
 
-mfsbsd-13.1-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot customfiles/opt/noVNC customfiles/vm
+mfsbsd-13.3-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot customfiles/opt/noVNC customfiles/vm
 	# Overlay
 	rsync -av overlay/ mfsbsd/
 	# Prepare
