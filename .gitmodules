@@ -1,3 +1,0 @@
-[submodule "mfsbsd"]
-	path = mfsbsd
-	url = git@github.com:OurSelf-Systems/mfsbsd.git

@@ -1,25 +1,27 @@
+BASE ?= $(PWD)
 DATEPREFIX != date "+%y%m%d.%H%M"
+SUDO=doas
+SELFVM=${BASE}/components/vm/vm/Self
 
-
-all: mfsbsd-13.3-RELEASE-amd64.iso
+all: components/vm/vm/Self  mfsbsd.iso
 
 iso != head -n 1 ./customfiles/objects/transporter/psyche/psyche.self | tr -d "\'" | tr -d " "
 iso_rename:
-	cp mfsbsd*.iso "psyche-${iso}.iso"
+	cp mfsbsd.iso "psyche-${iso}.iso"
 
-clean: clean_mfsbsd clean_customfiles/objects/snapshot clean_customfiles/opt/noVNC clean_customfiles/vm
+clean: clean_mfsbsd clean_customfiles/objects clean_customfiles/opt/noVNC clean_customfiles/vm
     # Ignore, probably just not mounted
-	umount cdrom || true
-	mdconfig -du md10 || true
+	${SUDO} umount cdrom || true
+	${SUDO} mdconfig -du md10 || true
 	rmdir cdrom || true
-	rm -r Psyche || true
+	rm -rf Psyche || true
 	rm -f psyche-13.1-RELEASE-amd64.iso
 
 clean_full: clean
 	rm -f FreeBSD-13.3-RELEASE-amd64-disc1.iso
 
 clean_mfsbsd:
-	cd mfsbsd ; make clean ; git reset --hard ; git clean -fxd . 
+	rm -rf mfsbsd 
 
 #
 #	Prepare
@@ -29,21 +31,27 @@ FreeBSD-13.3-RELEASE-amd64-disc1.iso:
 	fetch http://ftp.au.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/13.3/FreeBSD-13.3-RELEASE-amd64-disc1.iso
 
 cdrom: FreeBSD-13.3-RELEASE-amd64-disc1.iso
-	mkdir cdrom
-	mdconfig -a -t vnode -u 10 -f FreeBSD-13.3-RELEASE-amd64-disc1.iso
-	mount_cd9660 /dev/md10 cdrom
+	if [ ! -d cdrom ]; then mkdir cdrom ; \
+	${SUDO} mdconfig -a -t vnode -u 10 -f FreeBSD-13.3-RELEASE-amd64-disc1.iso ; \
+	${SUDO} mount_cd9660 /dev/md10 cdrom ; \
+	fi
+	@echo cdrom exists
 
 #
 #	Main build
 #
 
-mfsbsd-13.3-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot customfiles/opt/noVNC customfiles/vm
+mfsbsd.iso: cdrom customfiles/objects customfiles/opt/noVNC customfiles/vm
+	# mfsbsd
+	git clone https://github.com/OurSelf-Systems/mfsbsd.git
 	# Overlay
 	rsync -av overlay/ mfsbsd/
 	# Prepare
 	cd mfsbsd ; make clean
 	# Prepare
-	cd mfsbsd ; make iso BASE=../cdrom/usr/freebsd-dist \
+	cd mfsbsd ; make iso \
+		BASE=../cdrom/usr/freebsd-dist \
+		ISOIMAGE=mfsbsd.iso \
 		CUSTOMSCRIPTSDIR=../customscripts \
 		CUSTOMFILESDIR=../customfiles \
         MFSROOT_MINSIZE=200m \
@@ -51,7 +59,7 @@ mfsbsd-13.3-RELEASE-amd64.iso: cdrom customfiles/objects/snapshot customfiles/op
         MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
         BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
 	# Move back to top
-	mv mfsbsd/mfsbsd*.iso .
+	mv mfsbsd/mfsbsd.iso .
 
 #
 #   Self VM
@@ -69,14 +77,15 @@ clean_customfiles/vm:
 #	snapshot
 # 
 
-customfiles/objects/snapshot:
-	mkdir customfiles/objects || true
-	git clone --depth 1 --recursive --shallow-submodules git@github.com:OurSelf-Systems/Psyche.git 
-	cd Psyche/self && git sparse-checkout init --cone && git sparse-checkout add objects
-	cd Psyche && make
-	cp Psyche/snapshot customfiles/objects/
+customfiles/objects: components/objects/Psyche/snapshot
+	mkdir -p customfiles/objects && cp components/objects/Psyche/snapshot customfiles/objects
 
-clean_customfiles/objects/snapshot:
+components/objects/Psyche/snapshot:
+	cd components/objects && git clone --recursive git@github.com:OurSelf-Systems/Psyche.git 
+	cd components/objects/Psyche/self && git sparse-checkout init --cone && git sparse-checkout add objects
+	cd components/objects/Psyche && SELF=$(SELFVM) make
+
+clean_customfiles/objects:
 	rm -rf customfiles/objects
 
 #
