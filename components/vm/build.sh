@@ -47,6 +47,6 @@ cp /usr/local/lib/libXau.so.6 vm/
 cp /usr/local/lib/libXdmcp.so.6 vm/
 pushd vm
 # https://trugman-internals.com/posts/2019-06-20-elf-linux/
-patchelf --set-rpath . ./Self
+patchelf --set-rpath '$ORIGIN' *
 popd
 

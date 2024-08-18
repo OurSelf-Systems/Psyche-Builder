@@ -1,16 +1,5 @@
-cpdup
-dmidecode
-indexinfo
-ipmitool
-libevent
-libiconv
-readline
-smartmontools
-utf8proc
 tigervnc-server
-urwfonts
 ratpoison
-mbuffer
 git-tiny
 socat
 dtach
@@ -20,4 +9,6 @@ websockify
 caddy
 bash
 tmux
-sl
+autocutsel
+urwfonts
+xset

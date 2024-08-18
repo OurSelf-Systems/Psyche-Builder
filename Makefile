@@ -1,13 +1,14 @@
-BASE ?= $(PWD)
-DATEPREFIX != date "+%y%m%d.%H%M"
-SUDO=doas
-SELFVM=${BASE}/components/vm/vm/Self
 
-all: components/vm/vm/Self  mfsbsd.iso
+BASE            ?= $(PWD)
+DATEPREFIX      != date "+%y%m%d.%H%M"
+SUDO            ?= doas
+SELFVM          ?= ${BASE}/components/vm/vm/Self
+ARTIFACT_DIR    ?= artifacts
+FREEBSD_VERSION ?= 14.1
 
-iso != head -n 1 ./customfiles/objects/transporter/psyche/psyche.self | tr -d "\'" | tr -d " "
-iso_rename:
-	cp mfsbsd.iso "psyche-${iso}.iso"
+# Need VM to build ISO, so do first
+all: components/vm/vm/Self  ${ARTIFACT_DIR}/mfsbsd.iso
+	cp ${ARTIFACT_DIR}/mfsbsd.iso ${ARTIFACT_DIR}/psyche-$$(head -n 1 ./components/objects/Psyche/transporter/psyche/psyche.self | tr -d "\'" | tr -d " ").iso
 
 clean: clean_mfsbsd clean_customfiles/objects clean_customfiles/opt/noVNC clean_customfiles/vm
     # Ignore, probably just not mounted
@@ -15,10 +16,10 @@ clean: clean_mfsbsd clean_customfiles/objects clean_customfiles/opt/noVNC clean_
 	${SUDO} mdconfig -du md10 || true
 	rmdir cdrom || true
 	rm -rf Psyche || true
-	rm -f psyche-13.1-RELEASE-amd64.iso
+	rm -f ${ARTIFACT_DIR}/*
 
 clean_full: clean
-	rm -f FreeBSD-13.3-RELEASE-amd64-disc1.iso
+	rm -f FreeBSD-${FREEBSD_VERSION}-RELEASE-amd64-disc1.iso
 
 clean_mfsbsd:
 	rm -rf mfsbsd 
@@ -27,12 +28,12 @@ clean_mfsbsd:
 #	Prepare
 #
 
-FreeBSD-13.3-RELEASE-amd64-disc1.iso:
-	fetch http://ftp.au.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/13.3/FreeBSD-13.3-RELEASE-amd64-disc1.iso
+FreeBSD-${FREEBSD_VERSION}-RELEASE-amd64-disc1.iso:
+	fetch http://ftp.au.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/${FREEBSD_VERSION}/FreeBSD-${FREEBSD_VERSION}-RELEASE-amd64-disc1.iso
 
-cdrom: FreeBSD-13.3-RELEASE-amd64-disc1.iso
+cdrom: FreeBSD-${FREEBSD_VERSION}-RELEASE-amd64-disc1.iso
 	if [ ! -d cdrom ]; then mkdir cdrom ; \
-	${SUDO} mdconfig -a -t vnode -u 10 -f FreeBSD-13.3-RELEASE-amd64-disc1.iso ; \
+	${SUDO} mdconfig -a -t vnode -u 10 -f FreeBSD-${FREEBSD_VERSION}-RELEASE-amd64-disc1.iso ; \
 	${SUDO} mount_cd9660 /dev/md10 cdrom ; \
 	fi
 	@echo cdrom exists
@@ -41,7 +42,7 @@ cdrom: FreeBSD-13.3-RELEASE-amd64-disc1.iso
 #	Main build
 #
 
-mfsbsd.iso: cdrom customfiles/objects customfiles/opt/noVNC customfiles/vm
+${ARTIFACT_DIR}/mfsbsd.iso: cdrom customfiles/objects customfiles/opt/noVNC customfiles/vm
 	# mfsbsd
 	git clone https://github.com/OurSelf-Systems/mfsbsd.git
 	# Overlay
@@ -52,14 +53,16 @@ mfsbsd.iso: cdrom customfiles/objects customfiles/opt/noVNC customfiles/vm
 	cd mfsbsd ; make iso \
 		BASE=../cdrom/usr/freebsd-dist \
 		ISOIMAGE=mfsbsd.iso \
-		CUSTOMSCRIPTSDIR=../customscripts \
 		CUSTOMFILESDIR=../customfiles \
+        ROOTPW=psyche \
         MFSROOT_MINSIZE=200m \
         MFSROOT_MAXSIZE=3000m \
         MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
         BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
 	# Move back to top
-	mv mfsbsd/mfsbsd.iso .
+	mv mfsbsd/mfsbsd.iso ${ARTIFACT_DIR}
+	# CUSTOMSCRIPTSDIR=../customscripts \
+
 
 #
 #   Self VM
@@ -93,7 +96,7 @@ clean_customfiles/objects:
 #
 customfiles/opt/noVNC:
 	mkdir customfiles/opt || true
-	cd customfiles/opt && git clone --depth 1 git@github.com:OurSelf-Systems/noVNC.git
+	cd customfiles/opt && git clone --depth 1 https://github.com/OurSelf-Systems/noVNC.git
 
 clean_customfiles/opt/noVNC:
 	rm -rf customfiles/opt/noVNC
