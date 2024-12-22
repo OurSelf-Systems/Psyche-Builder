@@ -4,7 +4,7 @@ DATEPREFIX      != date "+%y%m%d.%H%M"
 SUDO            ?= doas
 SELFVM          ?= ${BASE}/components/vm/vm/Self
 ARTIFACT_DIR    ?= artifacts
-FREEBSD_VERSION ?= 14.1
+FREEBSD_VERSION ?= 14.2
 
 # Need VM to build ISO, so do first
 all: components/vm/vm/Self  ${ARTIFACT_DIR}/mfsbsd.iso
@@ -18,7 +18,11 @@ clean: clean_mfsbsd clean_customfiles/objects clean_customfiles/opt/noVNC clean_
 	rm -rf Psyche || true
 	rm -f ${ARTIFACT_DIR}/*
 
-clean_full: clean
+clean_components: clean
+	rm -rf components/vm/build components/vm/vm components/vm/self
+	rm -rf components/objects/Psyche	
+
+clean_full: clean clean_components
 	rm -f FreeBSD-${FREEBSD_VERSION}-RELEASE-amd64-disc1.iso
 
 clean_mfsbsd:
@@ -83,10 +87,14 @@ clean_customfiles/vm:
 customfiles/objects: components/objects/Psyche/snapshot
 	mkdir -p customfiles/objects && cp components/objects/Psyche/snapshot customfiles/objects
 
-components/objects/Psyche/snapshot:
-	cd components/objects && git clone --recursive git@github.com:OurSelf-Systems/Psyche.git 
-	cd components/objects/Psyche/self && git sparse-checkout init --cone && git sparse-checkout add objects
+
+components/objects/Psyche/snapshot: components/objects/Psyche
+	cd components/objects/Psyche && git pull
 	cd components/objects/Psyche && SELF=$(SELFVM) make
+	
+
+components/objects/Psyche:
+	cd components/objects && git clone --recursive git@github.com:OurSelf-Systems/Psyche.git 
 
 clean_customfiles/objects:
 	rm -rf customfiles/objects
@@ -96,7 +104,7 @@ clean_customfiles/objects:
 #
 customfiles/opt/noVNC:
 	mkdir customfiles/opt || true
-	cd customfiles/opt && git clone --depth 1 https://github.com/OurSelf-Systems/noVNC.git
+	cd customfiles/opt && git clone https://github.com/OurSelf-Systems/noVNC.git
 
 clean_customfiles/opt/noVNC:
 	rm -rf customfiles/opt/noVNC

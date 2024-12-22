@@ -4,7 +4,7 @@
 # Is environment OK?
 #
 
-if freebsd-version | grep -qv '14.1'; then
+if freebsd-version | grep -qv '14.2'; then
 	echo 'Not a supported FreeBSD Version'
 	exit 1
 fi
@@ -32,6 +32,8 @@ popd
 
 mkdir vm
 cp build/vm/Self vm/
+cp /usr/local/lib/libSM.so.6 vm/
+cp /usr/local/lib/libICE.so.6 vm/
 cp /usr/local/lib/libX11.so.6 vm/
 cp /usr/local/lib/libXext.so.6 vm/
 cp /lib/libncursesw.so.9 vm/
