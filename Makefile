@@ -49,6 +49,7 @@ cdrom: FreeBSD-${FREEBSD_VERSION}-RELEASE-amd64-disc1.iso
 ${ARTIFACT_DIR}/mfsbsd.iso: cdrom customfiles/objects customfiles/opt/noVNC customfiles/vm
 	# mfsbsd
 	git clone https://github.com/OurSelf-Systems/mfsbsd.git
+	cd mfsbsd ; git checkout post-package-scripts
 	# Overlay
 	rsync -av overlay/ mfsbsd/
 	# Prepare
@@ -58,15 +59,15 @@ ${ARTIFACT_DIR}/mfsbsd.iso: cdrom customfiles/objects customfiles/opt/noVNC cust
 		BASE=../cdrom/usr/freebsd-dist \
 		ISOIMAGE=mfsbsd.iso \
 		CUSTOMFILESDIR=../customfiles \
-        ROOTPW=psyche \
-        MFSROOT_MINSIZE=200m \
-        MFSROOT_MAXSIZE=3000m \
-        MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
-        BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
+		CUSTOMSCRIPTSDIR=../customscripts \
+		CUSTOMPOSTPKGSCRIPTSDIR=../custompostpkgscripts \
+		ROOTPW=psyche \
+		MFSROOT_MINSIZE=200m \
+		MFSROOT_MAXSIZE=3000m \
+		MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
+		BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
 	# Move back to top
 	mv mfsbsd/mfsbsd.iso ${ARTIFACT_DIR}
-	# CUSTOMSCRIPTSDIR=../customscripts \
-
 
 #
 #   Self VM
