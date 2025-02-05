@@ -1,0 +1,10 @@
+VM ?= ../../vm/vm/Self
+
+objects/snapshot:
+	git clone git@github.com:OurSelf-Systems/Psyche.git
+	cd Psyche && SELF=$(VM) make
+	mkdir -p objects && cp Psyche/snapshot objects/
+
+clean:
+	rm -rf Psyche
+	rm -rf objects
