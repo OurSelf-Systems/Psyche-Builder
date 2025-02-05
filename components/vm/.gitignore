@@ -3,4 +3,7 @@
 
 # But not these files...
 !.gitignore
-!build-vm.sh
+!build.sh
+!mk-chroot.sh
+!rm-chroot.sh
+
