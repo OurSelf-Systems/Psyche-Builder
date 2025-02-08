@@ -15,5 +15,6 @@ rm -r $TOP/usr/local/share/doc
 rm -r $TOP/usr/local/share/ri
 #rm -r $TOP/usr/local/share/llvm-devel
 rm -r $TOP/usr/local/libexec/gcc13
+rm -r $TOP/usr/local/lib/python3.11
 
 du -sh $TOP/
