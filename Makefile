@@ -7,7 +7,7 @@ ARTIFACT_DIR    ?= artifacts
 FREEBSD_VERSION ?= 14.2
 
 # Need VM to build ISO, so do first
-all: components/vm/vm/Self  ${ARTIFACT_DIR}/mfsbsd.iso
+all: pkgs components/vm/vm/Self  ${ARTIFACT_DIR}/mfsbsd.iso
 	cp ${ARTIFACT_DIR}/mfsbsd.iso ${ARTIFACT_DIR}/psyche-$$(head -n 1 ./components/objects/Psyche/transporter/psyche/psyche.self | tr -d "\'" | tr -d " ").iso
 
 clean: clean_mfsbsd clean_customfiles/objects clean_customfiles/opt/noVNC clean_customfiles/vm
@@ -31,6 +31,9 @@ clean_mfsbsd:
 #
 #	Prepare
 #
+
+pkgs:
+	pkg install -y rsync bash
 
 FreeBSD-${FREEBSD_VERSION}-RELEASE-amd64-disc1.iso:
 	fetch http://ftp.au.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/${FREEBSD_VERSION}/FreeBSD-${FREEBSD_VERSION}-RELEASE-amd64-disc1.iso

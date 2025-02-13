@@ -2,10 +2,10 @@
 
 in-root()
 {
-	chroot i386-chroot/ /bin/sh -c "$1"
+	doas chroot i386-chroot/ /bin/sh -c "$1"
 }
 
-./mk-chroot.sh /home/russell/Psyche-Builder/components/vm/i386-chroot/
+doas ./mk-chroot.sh /psyche/Psyche-Builder/components/vm/i386-chroot/
 #cp build-in-chroot.sh i386-chroot
 in-root "pkg install -y rsync cmake git xxd libX11 libXext gcc bash patchelf"
 in-root "echo 'libgcc_s.so.1  /usr/local/lib/gcc13/libgcc_s.so.1' >> /etc/libmap.conf"
@@ -36,10 +36,10 @@ in-root "cp /usr/local/lib/libXau.so.6 vm/"
 in-root "cp /usr/local/lib/libXdmcp.so.6 vm/"
 
 # https://trugman-internals.com/posts/2019-06-20-elf-linux/
-patchelf --set-rpath \$ORIGIN i386-chroot/vm/*
+doas patchelf --set-rpath \$ORIGIN i386-chroot/vm/*
 
 #
 # Extract
 #
-cp -r i386-chroot/vm .
+doas cp -r i386-chroot/vm .
 
