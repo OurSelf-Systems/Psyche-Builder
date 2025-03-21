@@ -5,6 +5,9 @@ SUDO            ?= doas
 SELFVM          ?= ${BASE}/components/vm/vm/Self
 ARTIFACT_DIR    ?= artifacts
 FREEBSD_VERSION ?= 14.2
+MODS            ?= "aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs \
+                     if_bridge bridgestp if_epair"
+#	      			 netgraph ng_bridge ng_ether ng_eiface ng_socket ng_ksocket ng_vlan ng_tee ng_etf ng_one2many"
 
 # Need VM to build ISO, so do first
 all: pkgs components/vm/vm/Self  ${ARTIFACT_DIR}/mfsbsd.iso
@@ -67,8 +70,8 @@ ${ARTIFACT_DIR}/mfsbsd.iso: cdrom customfiles/objects customfiles/opt/noVNC cust
 		ROOTPW=psyche \
 		MFSROOT_MINSIZE=200m \
 		MFSROOT_MAXSIZE=3000m \
-		MFSMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs" \
-		BOOTMODULES="aesni crypto cryptodev ext2fs geom_eli geom_mirror geom_nop ipmi ntfs nullfs opensolaris smbus snp tmpfs zfs pf pflog pty fdescfs linprocfs linsysfs"
+		MFSMODULES=${MODS} \
+		BOOTMODULES=${MODS}	
 	# Move back to top
 	mv mfsbsd/mfsbsd.iso ${ARTIFACT_DIR}
 
