@@ -1,8 +1,8 @@
-VM ?= ../../vm/vm/Self
+VM := '../../vm/vm/Self'
 
-objects/snapshot:
+make-snapshot:
 	git clone git@github.com:OurSelf-Systems/Psyche.git
-	cd Psyche && SELF=$(VM) make
+	cd Psyche && SELF={{VM}} make
 	mkdir -p objects && cp Psyche/snapshot objects/
 
 clean:
