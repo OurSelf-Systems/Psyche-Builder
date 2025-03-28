@@ -3,7 +3,4 @@
 
 # But not these files...
 !.gitignore
-!build.sh
-!mk-chroot.sh
-!rm-chroot.sh
 !justfile

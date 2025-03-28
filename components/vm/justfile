@@ -1,7 +1,9 @@
 default:
 	@just --list
 
+#
 # Variables
+#
 
 CHROOT_PATH := 'i386-chroot'
 FREEBSD_VERSION := '14.2-RELEASE'
@@ -9,28 +11,94 @@ TEMP_DIR := '.'
 BASE_FILE := 'base.txz'
 BASE_URL := 'http://ftp.freebsd.org/pub/FreeBSD/releases/i386/' + FREEBSD_VERSION + '/' + BASE_FILE
 
-make-chroot: setup download extract create-dirs mount-fs copy-dns create-fstab
-	@echo "Chroot environment created at {{CHROOT_PATH}}"
+#
+#	Public targets
+#
 
+# Make the VM
+[group('public')]
+make-vm: make-chroot setup-self-source compile-vm package-vm patchelf
+	@just _banner "VM made, in vm/"
+	
 # Clean the chroot and built artifacts
 [group('public')]
-clean: rm-chroot
-	@echo "Cleaned chroot environment at {{CHROOT_PATH}}"
+clean: rm-chroot rm-artifacts
+	@just _banner "Cleaned chroot environment at {{CHROOT_PATH}}"
 
 # Reset everything to original state
 [group('public')]
 reset: clean remove-base
-	@echo "Resetted everything to original"
+	@just _banner "Resetted everything to original"
 
-base_exists := path_exists(TEMP_DIR + '/' + BASE_FILE)
+# Create the Chroot and prepare it for use
+[group('chroot')]
+make-chroot: setup-dirs download extract create-dirs copy-dns install-pkgs-in-chroot  
+	@just _banner "Chroot environment created at {{CHROOT_PATH}}"
+
+# Remove the chroot
+[group('chroot')]
+rm-chroot:    
+	@just _action Removing chroot at {{CHROOT_PATH}}
+	if {{path_exists(CHROOT_PATH)}} ; then chflags -R noschg,nouchg {{CHROOT_PATH}}/ ; fi
+	if mount | grep -q "on {{CHROOT_PATH}}/proc"; then umount {{CHROOT_PATH}}/proc; fi
+	if mount | grep -q "on {{CHROOT_PATH}}/dev"; then umount {{CHROOT_PATH}}/dev; fi
+	if {{path_exists(CHROOT_PATH)}} ; then rm -r {{CHROOT_PATH}}/ ; fi
+
+#
+#	Supporting tasks for compile
+#
+
+install-pkgs-in-chroot:
+	@just _action 'Installing packages in chroot'
+	pkg -c {{CHROOT_PATH}} install -y --quiet rsync cmake git xxd libX11 libXext gcc bash >> /dev/null
+	@just _in-root "echo 'libgcc_s.so.1  /usr/local/lib/gcc13/libgcc_s.so.1' >> /etc/libmap.conf"
+
+patchelf:
+	@just _action 'Patching elf (outside chroot)'
+	pkg install -y patchelf
+	@# https://trugman-internals.com/posts/2019-06-20-elf-linux/
+	patchelf --set-rpath \$ORIGIN vm/*
+
+setup-self-source:
+	@just _action Setting up Self sources
+	@just _in-root "git clone https://github.com/russellallen/self.git"
+
+compile-vm:
+	@just _action Compiling VM
+	@just _in-root "mkdir build ; cd build ; CC=gcc CPP=g++ cmake ../self ; cmake --build ."
+
+package-vm: 
+	@just _action Packaging VM
+	mkdir vm/
+	cp {{CHROOT_PATH}}/build/vm/Self vm/
+	cp {{CHROOT_PATH}}/usr/local/lib/libX11.so.6 vm/
+	cp {{CHROOT_PATH}}/usr/local/lib/libXext.so.6 vm/
+	cp {{CHROOT_PATH}}/lib/libncursesw.so.9 vm/
+	cp {{CHROOT_PATH}}/lib/libtinfow.so.9 vm/
+	cp {{CHROOT_PATH}}/usr/lib/libformw.so.6 vm/
+	cp {{CHROOT_PATH}}/usr/local/lib/gcc13/libstdc++.so.6 vm/
+	cp {{CHROOT_PATH}}/lib/libm.so.5 vm/
+	cp {{CHROOT_PATH}}/lib/libgcc_s.so.1 vm/
+	cp {{CHROOT_PATH}}/lib/libc.so.7 vm/
+	cp {{CHROOT_PATH}}/usr/local/lib/libxcb.so.1 vm/
+	cp {{CHROOT_PATH}}/lib/libthr.so.3 vm/
+	cp {{CHROOT_PATH}}/usr/local/lib/libXau.so.6 vm/
+	cp {{CHROOT_PATH}}/usr/local/lib/libXdmcp.so.6 vm/
+
+#
+#	Supporting tasks for chroot
+#
+
 remove-base:
-	if {{base_exists}} ; then rm {{TEMP_DIR}}/{{BASE_FILE}} ; fi
+    @just _action "Removing base.tgz"
+    if {{path_exists(TEMP_DIR + '/' + BASE_FILE)}} ; then rm {{TEMP_DIR}}/{{BASE_FILE}} ; fi
 
-setup:
+setup-dirs:
 	mkdir -p {{TEMP_DIR}}
 	mkdir -p {{CHROOT_PATH}}
 
-download: setup
+download: setup-dirs
+	@just _action Downloading FreeBSD
 	@if [ -f "{{TEMP_DIR}}/{{BASE_FILE}}" ]; then \
 		echo "Reusing already downloaded base..."; \
 	else \
@@ -40,45 +108,31 @@ download: setup
 	fi
 
 extract: download
-	@echo "Extracting base system..."
+	@just _action "Extracting base system..."
 	tar -xf {{TEMP_DIR}}/{{BASE_FILE}} -C {{CHROOT_PATH}} || \
 		(@echo "Failed to extract base system" && exit 1)
 
 create-dirs: extract
-	@echo "Creating necessary directories..."
-	mkdir -p {{CHROOT_PATH}}/dev
-	mkdir -p {{CHROOT_PATH}}/proc
-	# @mkdir -p $(CHROOT_PATH)/compat/linux/proc
-
-mount-fs: create-dirs
-	@echo "Setting up device nodes..."
-	mount -t devfs devfs {{CHROOT_PATH}}/dev
-	
-	@echo "Setting up procfs..."
-	mount -t procfs proc {{CHROOT_PATH}}/proc
-	# @mount -t linprocfs linproc $(CHROOT_PATH)/compat/linux/proc || true
 
 copy-dns: extract
-	@echo "Copying DNS configuration..."
+	@just _action "Copying DNS configuration..."
 	cp /etc/resolv.conf {{CHROOT_PATH}}/etc/
 
-create-fstab: mount-fs
-	@echo "Creating fstab entries..."
-	@if ! grep -q "{{CHROOT_PATH}}/dev" /etc/fstab; then \
-		echo "devfs           {{CHROOT_PATH}}/dev        devfs           rw              0       0" >> /etc/fstab; \
-	fi
-	@if ! grep -q "{{CHROOT_PATH}}/proc" /etc/fstab; then \
-		echo "proc            {{CHROOT_PATH}}/proc       procfs          rw              0       0" >> /etc/fstab; \
-	fi
-	# @if ! grep -q "$(CHROOT_PATH)/compat/linux/proc" /etc/fstab; then \
-	# 	echo "linprocfs       $(CHROOT_PATH)/compat/linux/proc  linprocfs       rw      0       0" >> /etc/fstab; \
-	# fi
+rm-artifacts:
+	@just _action Cleaning build artifacts
+	if {{path_exists('vm/')}} ; then rm -r vm/ ; fi
 
-exists := path_exists(CHROOT_PATH)
-rm-chroot:    
-	if {{exists}} ; then chflags -R noschg,nouchg {{CHROOT_PATH}}/ ; fi
-	if mount | grep -q "on {{CHROOT_PATH}}/proc"; then umount {{CHROOT_PATH}}/proc; fi
-	if mount | grep -q "on {{CHROOT_PATH}}/dev"; then umount {{CHROOT_PATH}}/dev; fi
-	# if mount | grep -q "on $(CHROOT_PATH)/compat/linux/proc"; then umount $(CHROOT_PATH)/compat/linux/proc; fi
-	rm -rf {{CHROOT_PATH}}/
-	@echo Removed chroot at {{CHROOT_PATH}}
+#
+#	Supporting functions
+#
+
+_banner *ARGS:
+    @printf '{{BOLD + WHITE}}[%s] %-72s{{NORMAL}}\n' "$(date +%H:%M:%S)" "{{ARGS}}"
+
+_action *ARGS:
+    @printf '{{BOLD + GREEN}}[%s] %-72s{{NORMAL}}\n' "{{ARGS}}"
+
+_in-root *ARGS:
+	chroot {{CHROOT_PATH}} /bin/sh -c "{{ARGS}}"
+
+
