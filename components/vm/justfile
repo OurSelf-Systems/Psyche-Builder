@@ -1,0 +1,84 @@
+default:
+	@just --list
+
+# Variables
+
+CHROOT_PATH := 'i386-chroot'
+FREEBSD_VERSION := '14.2-RELEASE'
+TEMP_DIR := '.'
+BASE_FILE := 'base.txz'
+BASE_URL := 'http://ftp.freebsd.org/pub/FreeBSD/releases/i386/' + FREEBSD_VERSION + '/' + BASE_FILE
+
+make-chroot: setup download extract create-dirs mount-fs copy-dns create-fstab
+	@echo "Chroot environment created at {{CHROOT_PATH}}"
+
+# Clean the chroot and built artifacts
+[group('public')]
+clean: rm-chroot
+	@echo "Cleaned chroot environment at {{CHROOT_PATH}}"
+
+# Reset everything to original state
+[group('public')]
+reset: clean remove-base
+	@echo "Resetted everything to original"
+
+base_exists := path_exists(TEMP_DIR + '/' + BASE_FILE)
+remove-base:
+	if {{base_exists}} ; then rm {{TEMP_DIR}}/{{BASE_FILE}} ; fi
+
+setup:
+	mkdir -p {{TEMP_DIR}}
+	mkdir -p {{CHROOT_PATH}}
+
+download: setup
+	@if [ -f "{{TEMP_DIR}}/{{BASE_FILE}}" ]; then \
+		echo "Reusing already downloaded base..."; \
+	else \
+		echo "Downloading base system..."; \
+		cd {{TEMP_DIR}} && fetch {{BASE_URL}} || \
+		(echo "Failed to download base system" && exit 1); \
+	fi
+
+extract: download
+	@echo "Extracting base system..."
+	tar -xf {{TEMP_DIR}}/{{BASE_FILE}} -C {{CHROOT_PATH}} || \
+		(@echo "Failed to extract base system" && exit 1)
+
+create-dirs: extract
+	@echo "Creating necessary directories..."
+	mkdir -p {{CHROOT_PATH}}/dev
+	mkdir -p {{CHROOT_PATH}}/proc
+	# @mkdir -p $(CHROOT_PATH)/compat/linux/proc
+
+mount-fs: create-dirs
+	@echo "Setting up device nodes..."
+	mount -t devfs devfs {{CHROOT_PATH}}/dev
+	
+	@echo "Setting up procfs..."
+	mount -t procfs proc {{CHROOT_PATH}}/proc
+	# @mount -t linprocfs linproc $(CHROOT_PATH)/compat/linux/proc || true
+
+copy-dns: extract
+	@echo "Copying DNS configuration..."
+	cp /etc/resolv.conf {{CHROOT_PATH}}/etc/
+
+create-fstab: mount-fs
+	@echo "Creating fstab entries..."
+	@if ! grep -q "{{CHROOT_PATH}}/dev" /etc/fstab; then \
+		echo "devfs           {{CHROOT_PATH}}/dev        devfs           rw              0       0" >> /etc/fstab; \
+	fi
+	@if ! grep -q "{{CHROOT_PATH}}/proc" /etc/fstab; then \
+		echo "proc            {{CHROOT_PATH}}/proc       procfs          rw              0       0" >> /etc/fstab; \
+	fi
+	# @if ! grep -q "$(CHROOT_PATH)/compat/linux/proc" /etc/fstab; then \
+	# 	echo "linprocfs       $(CHROOT_PATH)/compat/linux/proc  linprocfs       rw      0       0" >> /etc/fstab; \
+	# fi
+
+exists := path_exists(CHROOT_PATH)
+rm-chroot:    
+	if {{exists}} ; then chflags -R noschg,nouchg {{CHROOT_PATH}}/ ; fi
+	if mount | grep -q "on {{CHROOT_PATH}}/proc"; then umount {{CHROOT_PATH}}/proc; fi
+	if mount | grep -q "on {{CHROOT_PATH}}/dev"; then umount {{CHROOT_PATH}}/dev; fi
+	# if mount | grep -q "on $(CHROOT_PATH)/compat/linux/proc"; then umount $(CHROOT_PATH)/compat/linux/proc; fi
+	rm -rf {{CHROOT_PATH}}/
+	@echo Removed chroot at {{CHROOT_PATH}}

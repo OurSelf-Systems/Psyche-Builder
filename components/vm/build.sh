@@ -5,7 +5,7 @@ in-root()
 	doas chroot i386-chroot/ /bin/sh -c "$1"
 }
 
-doas ./mk-chroot.sh /psyche/Psyche-Builder/components/vm/i386-chroot/
+doas just make-chroot
 #cp build-in-chroot.sh i386-chroot
 in-root "pkg install -y rsync cmake git xxd libX11 libXext gcc bash patchelf"
 in-root "echo 'libgcc_s.so.1  /usr/local/lib/gcc13/libgcc_s.so.1' >> /etc/libmap.conf"
