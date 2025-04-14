@@ -1,5 +1,9 @@
 VM := '../../vm/vm/Self'
 
+[private]
+default:
+	@just --list
+
 make-snapshot:
 	git clone git@github.com:OurSelf-Systems/Psyche.git
 	cd Psyche && SELF={{VM}} make
